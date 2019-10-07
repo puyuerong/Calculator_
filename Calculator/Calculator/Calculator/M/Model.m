@@ -29,12 +29,24 @@
 }
 - (NSInteger)Compare:(NSString *)str {
     NSMutableArray *array = [[NSMutableArray alloc] initWithObjects:@"(", @"+", @"-", @"*", @"/", @")", nil];
+    if (([_tempArray count] != 0) && ([_tempArray[[_tempArray count] - 1] isEqualToString: str])) {
+        return 0;
+    }
+    if (([_tempArray[[_tempArray count] - 1] isEqualToString: @"+"]) && ([str isEqualToString: @"-"])) {
+        [self PushInto: @"nil"];
+        return 1;
+    }
+    if (([_tempArray[[_tempArray count] - 1] isEqualToString: @"*"]) && ([str isEqualToString: @"/"])) {
+        [self PushInto: @"nil"];
+        return 1;
+    }
     for (int i = 0; i < [array count]; i++) {
-        if ([_tempArray[[_tempArray count] - 1] isEqualToString:array[i]]) {
-            return 1;            /*直接进栈*/
-        }
+        
         if ([str isEqualToString:array[i]]) {
             return 0;             /*操作*/
+        }
+        if ([_tempArray[[_tempArray count] - 1] isEqualToString:array[i]]) {
+            return 1;            /*直接进栈*/
         }
     }
     return 0;
@@ -74,6 +86,7 @@
         return sum;
     }
 }
+
 - (BOOL)JudgeSymbol:(NSString *)str {
     if (([str isEqualToString: @"+"]) || ([str isEqualToString:@"-"]) || ([str isEqualToString:@"*"]) || ([str isEqualToString:@"/"]) || ([str isEqualToString: @"("]) || ([str isEqualToString: @")"])) {
         return YES;

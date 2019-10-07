@@ -39,27 +39,56 @@
     }
     if ((btn.tag > 100) && (btn.tag <= 106)) {             /*摁了加减乘除或括号*/
         if ([_calculatorView.numberString length] != 0) {     /*判断数字有没有问题*/
+            NSLog(@"count = %ld", _count);
             if (([_calculatorView.numberString characterAtIndex:[_calculatorView.numberString length] - 1] == '.') || ([_calculatorView.numberString characterAtIndex:0] == '.') || (_count > 1)){
                 _count = 0;
                 [self error];
+                return;
             } else {
-                [_model PushInto: _calculatorView.numberString];
-                _calculatorView.numberString = @"";
-                _count = 0;
+                if (([btn.titleLabel.text isEqualToString: @"("]) && ([_calculatorView.numberString length] != 0)) {
+                    UIButton *btn = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+                    [btn setTitle:@"*" forState:UIControlStateNormal];
+                    
+                    btn.tag = 101;
+                    [self ClickButton:btn];
+                    _calculatorView.expressionStr = [_calculatorView.expressionStr substringToIndex:[_calculatorView.expressionStr length] - 1];
+                    _calculatorView.expressionLabel.text = _calculatorView.expressionStr;
+                } else {
+                    [_model PushInto: _calculatorView.numberString];
+                    _calculatorView.numberString = @"";
+                    _count = 0;
+                }
             }
         }
         if ([_model.tempArray count] == 0) {
             if ([btn.titleLabel.text isEqualToString:@")"]) {
                 [self error];
             } else {
-                [_model tempPushIntoSymbol:btn.titleLabel.text];
+                if (([btn.titleLabel.text isEqualToString: @"-"]) && ([_model.allArray count] == 0)) {
+                    _calculatorView.numberString = [_calculatorView.numberString stringByAppendingString: @"-"];
+                    NSLog(@"number = %@", _calculatorView.numberString);
+                    return;
+                } else {
+//                    while (([_model Compare: @"-"] == 0) && ([_model.tempArray count] != 0)) {
+//                        [_model PushInto: @"nil"];
+//                    }
+                    [_model tempPushIntoSymbol:btn.titleLabel.text];
+                }
             }
         } else {
+            if (([btn.titleLabel.text isEqualToString: @"-"]) && ([_calculatorView.expressionStr characterAtIndex: [_calculatorView.expressionStr length] - 2] == '(')) {
+                
+                 _calculatorView.numberString = [_calculatorView.numberString stringByAppendingString: @"-"];
+                return;
+            }
+        
             if ([_model Compare:btn.titleLabel.text] == 0) {
                 if ([btn.titleLabel.text isEqualToString: @"("]) {
                     [_model tempPushIntoSymbol: btn.titleLabel.text];
                 } else {
-                    [_model PushInto:@"nil"];
+                    while (([_model.tempArray count] != 0) && ([_model Compare: @"-"] == 0)) {
+                        [_model PushInto: @"nil"];
+                    }
                     [_model tempPushIntoSymbol:btn.titleLabel.text];
                 }
             } else {
@@ -67,17 +96,20 @@
                     for (int i = (int)[_model.tempArray count] - 1; ; i--){
                         NSLog(@"i = %d", i);
                         
+                    
                         if ([_model.tempArray[i] isEqualToString:@"("]) {
+                            int j = (int)[_model.tempArray count];
+                            j = j - 1;
                             while (1) {
-                                NSLog(@"%@", _model.tempArray);
-                                if ([_model.tempArray count] == i + 1) {
-                                    break;
+                                NSLog(@"%d", j);
+                                if (j == i) {
+                                    [_model.tempArray removeObjectAtIndex: i];
+                                    return;
                                 }
-                                [_model.allArray addObject:_model.tempArray[i + 1]];
-                                [_model.tempArray removeObjectAtIndex:i + 1];
+                                [_model.allArray addObject:_model.tempArray[j]];
+                                [_model.tempArray removeObjectAtIndex:j];
+                                j--;
                             }
-                            [_model.tempArray removeObjectAtIndex:i];
-                            break;
                         }
                         if (i == 0) {
                             [self error];
@@ -99,8 +131,19 @@
         _calculatorView.expressionStr = @"";
     }
     if (btn.tag == 100) {                            /*摁了=*/
+        
         if ([_calculatorView.numberString length] != 0) {
-            [_model PushInto:_calculatorView.numberString];
+            if (([_calculatorView.numberString characterAtIndex:[_calculatorView.numberString length] - 1] == '.') || ([_calculatorView.numberString characterAtIndex:0] == '.') || (_count > 1)){
+                _count = 0;
+                [self error];
+                return;
+            } else {
+                [_model PushInto:_calculatorView.numberString];
+            }
+        }
+        if (([_model.tempArray count] == 0) && ([_model.allArray count] == 0)) {
+            [self error];
+            return;
         }
         while ([_model.tempArray count] != 0) {
             [_model PushInto:@"nil"];
