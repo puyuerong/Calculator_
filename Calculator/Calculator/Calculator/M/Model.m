@@ -40,9 +40,13 @@
     return 0;
 }
 - (float)Transform:(NSMutableString *)str {
-    int flag = 0;
+    int flag = 0, zhen = 1;
     float sum = 0, temp = 0, t = 0.0;
-    temp = (int)[str characterAtIndex:0] - 48;
+    if ([str characterAtIndex:0] == '-') {
+        zhen = 0;
+    } else {
+        temp = (int)[str characterAtIndex:0] - 48;
+    }
     if ([str length] > 1) {
         for (int i = 1; i < [str length]; i++) {
             if ([str characterAtIndex:i] == '.') {
@@ -64,7 +68,11 @@
     } else {
         sum = (int)[str characterAtIndex:0] - 48;
     }
-    return sum;
+    if (zhen == 0) {
+        return sum * (-1);
+    } else {
+        return sum;
+    }
 }
 - (BOOL)JudgeSymbol:(NSString *)str {
     if (([str isEqualToString: @"+"]) || ([str isEqualToString:@"-"]) || ([str isEqualToString:@"*"]) || ([str isEqualToString:@"/"]) || ([str isEqualToString: @"("]) || ([str isEqualToString: @")"])) {
